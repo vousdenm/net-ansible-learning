@@ -1,0 +1,205 @@
+The topology consists of 
+ - 4 sites
+	- Site 1: 1x Cisco 3725
+	- Site 2: 1x Cisco 3725
+	- Site 3: 2x Cisco 3725
+	- Site 4: 2x Cisco 3725
+- 2 "ISPs"
+	- ISP1: 1x Ethernet Switch
+	- ISP1: 2x Ethernet Switch
+
+The configuration is modelled roughly on the DMVPN example
+It differs with the use of Ethernet between each site and an "ISP" (each a L2 broadcast segment consisting of a ethernet switch)
+BGP is utilized with eBGP between sites and iBGP internally advertising management networks
+
+https://github.com/vousdenm/net-ansible-learning.git
+
+----------------------
+
+IntRouter
+	Interfaces
+		Et0/0	
+			CentosVM		
+			10.0.0.1
+			255.255.255.252
+		Et0/1
+			NAT Cloud
+			DHCP
+		Et0/2
+			R2
+			10.0.1.1
+			255.255.255.252
+R1
+	Interfaces
+		Et0/0
+			IntRouter
+			10.0.1.2
+			255.255.255.252
+		Et1/0
+			>ISP1
+			10.1.10.1
+			255.255.255.128
+		Loopback0
+			Mgmt
+			192.168.101.1
+			255.255.255.255
+	BGP	
+		neighbor
+			65001
+			10.1.10.2		
+		neighbor
+			65001
+			10.1.10.3
+		neighbor
+			65001
+			10.1.10.5
+
+R2
+	Interfaces
+		Et1/0
+			>ISP1
+			10.1.10.2
+			255.255.255.128
+		Et1/1
+			>ISP2
+			10.2.10.2
+			255.255.255.128
+		Loopback0
+			Mgmt
+			192.168.102.1
+			255.255.255.255
+	BGP	
+		neighbor
+			65001
+			10.1.10.1	
+		neighbor
+			65001
+			10.1.10.3
+		neighbor
+			65001
+			10.1.10.5
+		neighbor
+			65001
+			10.2.10.6
+		neighbor
+			65001
+			10.2.10.4
+R3A
+
+	Interfaces
+		Et0/0
+			>R3B
+			192.168.3.1
+			255.255.255.252
+		Et1/0
+			>ISP1
+			10.1.10.3
+			255.255.255.128
+		Loopback0
+			Mgmt
+			192.168.103.1
+			255.255.255.255
+	BGP	
+		neighbor
+			65001
+			10.1.10.1
+		neighbor
+			65001
+			10.1.10.2
+		neighbor
+			65001
+			10.1.10.5
+		neighbor
+			65001
+			192.168.3.2
+R3B
+
+	Interfaces
+		Et0/0
+			>R3A
+			192.168.3.2
+			255.255.255.252
+		Et1/0
+			>ISP2
+			10.2.10.4
+			255.255.255.128	
+		Loopback0
+			Mgmt
+			192.168.103.2
+			255.255.255.255
+	BGP	
+		neighbor
+			65001
+			10.2.10.2
+		neighbor
+			65001
+			10.2.10.6
+		neighbor
+			65001
+			192.168.3.1
+
+C1
+
+	Interfaces
+		Et0/0
+			EthernetSwitch
+			192.168.10.1
+			255.255.255.252
+		Et1/0
+			>ISP1
+			10.1.10.5
+			255.255.255.128
+		Loopback0
+			Mgmt
+			192.168.105.1
+			255.255.255.255
+	BGP
+		neighbor
+			65001
+			10.1.10.1
+		neighbor
+			65001
+			10.1.10.2
+		neighbor
+			65001
+			10.1.10.3
+		neighbor
+			65001
+			192.168.10.2
+C2
+
+	Interfaces
+		Et0/0
+			EthernetSwitch
+			192.168.10.1
+			255.255.255.252
+		Et1/0
+			>ISP2
+			10.2.10.6
+			255.255.255.128
+		Loopback0
+			Mgmt
+			192.168.106.1
+			255.255.255.255
+	BGP
+		neighbor
+			65001
+			10.2.10.2
+		neighbor
+			65001
+			10.2.10.4
+		neighbor
+			65001
+			192.168.10.1
+
+AS
+	65001
+
+
+----------------------
+
+192.168.(Site).x - Site internal
+10.(ISP).10.x - WAN
+10.[01].x.x - Management
+
+
