@@ -1,13 +1,16 @@
 ---
-vars:
-  cli:
-    host: "{{ inventory_hostname }}"
-    username: ansible
-    password: ansible
-    transport: cli
-
----
-# Collect all facts from the device
-- ios_facts:
-    gather_subset: all
-    provider: "{{ cli }}"
+- name: FACTS
+  hosts: all
+  connection: local
+  vars:
+    cli:
+      host: "{{ inventory_hostname }}"
+      username: ansible
+      password: ansible
+      authorize: yes
+      auth_pass: ansible
+  tasks:
+  - name: Tell
+    ios_facts:
+      gather_subset: all
+      provider: "{{ cli }}"
