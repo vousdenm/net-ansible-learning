@@ -1,0 +1,9 @@
+[spoke_routers]
+R1
+R2
+R3
+R4
+
+[hub_routers]
+C1
+C2
